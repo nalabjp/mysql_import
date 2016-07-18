@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ['nalabjp']
   spec.email         = ['nalabjp@gmail.com']
 
-  spec.summary       = 'Concurrent importer for MySQL'
-  spec.description   = 'Concurrent importer for MySQL'
+  spec.summary       = 'Simple concurrent importer for MySQL'
+  spec.description   = 'Simple concurrent importer for MySQL'
   spec.homepage      = 'https://github.com/nalabjp/mysql_import'
   spec.license       = 'MIT'
 

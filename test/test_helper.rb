@@ -1,4 +1,20 @@
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-require 'mysql_import'
 
-require 'minitest/autorun'
+if ENV['TRAVIS']
+  begin
+    require 'codeclimate-test-reporter'
+    CodeClimate::TestReporter.start
+  rescue LoadError
+  end
+end
+
+begin
+  require 'pry'
+rescue LoadError
+end
+
+require 'mysql2'
+require 'mysql_import'
+require 'test/unit'
+
+Dir[File.join(File.dirname(__FILE__), 'support/**/**.rb')].each {|f| require f }

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+set -vx
+
+cd $(dirname "$0")
+
+mysql -u root < ../test/sql/database.sql
+mysql -u root < ../test/sql/tables.sql

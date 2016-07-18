@@ -8,7 +8,7 @@ class MysqlImport
     @stash = []
     @fileters = []
     @concurrency = opts.has_key?(:concurrency) ? opts[:concurrency].to_i : 2
-    pool = concurrency == 0 ? 1 : concurrency
+    pool = concurrency.zero? ? 1 : concurrency
 
     @client = ConnectionPool.new(size: pool) { LoadDataInfile2::Client.new(config, sql_opts) }
     @result = Result.new

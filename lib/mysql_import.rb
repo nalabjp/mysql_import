@@ -1,4 +1,5 @@
 require 'mysql_import/version'
+require 'mysql_import/logger'
 require 'load_data_infile2'
 require 'connection_pool'
 require 'parallel'
@@ -7,6 +8,7 @@ class MysqlImport
   def initialize(config, opts ={}, sql_opts = {})
     @stash = []
     @fileters = []
+    @logger = Logger.new(opts[:log])
     @concurrency = opts.has_key?(:concurrency) ? opts[:concurrency].to_i : 2
     pool = concurrency.zero? ? 1 : concurrency
 

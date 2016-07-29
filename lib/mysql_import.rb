@@ -59,11 +59,11 @@ class MysqlImport
       end
     end
 
-    res = cli.import(fpath, opts)
+    cli.import(fpath, opts)
 
     if after
       begin
-        run_action(after, cli, res)
+        run_action(after, cli)
       rescue Break
       end
     end
@@ -71,18 +71,14 @@ class MysqlImport
     result.add(:imported, [table, (Time.now - t)])
   end
 
-  def run_action(action, cli, res = nil)
+  def run_action(action, cli)
     case action
     when Array
-      action.map { |act| run_action(act, cli, res) }
+      action.each { |act| run_action(act, cli) }
     when String
       cli.query(action)
     else
-      if res
-        action.call(cli, res)
-      else
-        action.call(cli)
-      end
+      action.call(cli)
     end
   end
 

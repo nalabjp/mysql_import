@@ -99,6 +99,11 @@ class MysqlImport
     def add(meth, res)
       mutex.synchronize { __send__(meth).push(res) }
     end
+
+    def clear
+      imported.clear
+      skipped.clear
+    end
   end
 
   class Break < StandardError; end

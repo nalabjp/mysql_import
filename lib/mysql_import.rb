@@ -44,6 +44,8 @@ class MysqlImport
   end
 
   def run_import(cli, fpath, opts)
+    t = Time.now
+
     before = opts.delete(:before)
     after = opts.delete(:after)
     table = opts[:table] || File.basename(fpath, '.*')
@@ -58,7 +60,6 @@ class MysqlImport
     end
 
     res = cli.import(fpath, opts)
-    result.add(:imported, table)
 
     if after
       begin
@@ -66,6 +67,8 @@ class MysqlImport
       rescue Break
       end
     end
+
+    result.add(:imported, [table, (Time.now - t)])
   end
 
   def run_action(action, cli, res = nil)

@@ -21,7 +21,7 @@ class MysqlImport
   end
 
   def import(*filters)
-    Parallel.each(filtered_list(filters), in_threads: concurrency) do |args|
+    Parallel.each(filtered_list(filters), parallel_opts) do |args|
       client.with do |cli|
         run_import(cli, *args)
       end
@@ -37,6 +37,10 @@ class MysqlImport
 
     regexps = filters.map{|f| Regexp.new(f) }
     stash.map{|row| row if regexps.any?{|r| r.match(row[0]) } }.compact
+  end
+
+  def parallel_opts
+    { in_threads: concurrency }
   end
 
   def run_import(cli, fpath, opts)

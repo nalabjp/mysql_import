@@ -11,7 +11,7 @@ class MysqlImportTest < Test::Unit::TestCase
     end
 
     test 'success' do
-      client = MysqlImport.new(DbConfig.to_hash)
+      client = MysqlImport.new(DbConfig.to_hash, log: false)
       client.add(File.expand_path('../csv/users_valid.csv', __FILE__), table: 'users')
       client.import
     end

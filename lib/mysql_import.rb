@@ -8,7 +8,6 @@ class MysqlImport
   def initialize(config, opts ={}, sql_opts = {})
     @stash = []
     @fileters = []
-    @logger = Logger.new(opts[:log])
     @concurrency = opts.has_key?(:concurrency) ? opts[:concurrency].to_i : 2
     pool = concurrency.zero? ? 1 : concurrency
 

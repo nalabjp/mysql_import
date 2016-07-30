@@ -7,11 +7,11 @@ class DbHelper
       query(sql)
     end
 
-    private
-
     def query(sql)
       client.query(sql)
     end
+
+    private
 
     def client
       @client ||= Mysql2::Client.new(DbConfig.to_hash)

@@ -58,7 +58,7 @@ class MysqlImport
     attr_reader :logger
 
     def parallel_opts
-      @_parallel_opts ||= super.merge(
+      @parallel_opts ||= super.merge(
         finish: proc do |item, index, _result|
           logger.debug("parallel_item: #{item.inspect}")
           logger.debug("parallel_index: #{index}")

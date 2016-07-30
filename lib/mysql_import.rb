@@ -16,8 +16,8 @@ class MysqlImport
     @result = Result.new
   end
 
-  def add(file_path, options = {})
-    stash.push([file_path, options])
+  def add(file_path, opts = {})
+    stash.push([file_path, opts])
   end
 
   def import(*filters)

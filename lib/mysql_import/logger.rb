@@ -43,7 +43,7 @@ class MysqlImport
       if result.imported.size > 0
         result.imported.sort.each {|t| logger.info("  #{t[0]} (#{t[1]} sec)") }
       else
-        result.logger.info('  nothing...')
+        logger.info('  nothing...')
       end
       if result.skipped.size > 0
         logger.info('Skipped tables:')

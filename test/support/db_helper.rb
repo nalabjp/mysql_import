@@ -9,13 +9,6 @@ class DbHelper
 
     private
 
-    def run(sql)
-      cmd = "#{MYSQL_CMD} < #{sql}"
-      unless system(cmd)
-        raise "Failed to run sql : #{cmd}"
-      end
-    end
-
     def query(sql)
       client.query(sql)
     end

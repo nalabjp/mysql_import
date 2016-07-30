@@ -18,3 +18,5 @@ require 'mysql_import'
 require 'test/unit'
 
 Dir[File.join(File.dirname(__FILE__), 'support/**/**.rb')].each {|f| require f }
+
+Test::Unit::TestCase.include(DbHelper::QueryInterface)

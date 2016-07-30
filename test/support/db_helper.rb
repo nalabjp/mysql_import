@@ -17,4 +17,18 @@ class DbHelper
       @client ||= Mysql2::Client.new(DbConfig.to_hash)
     end
   end
+
+  module QueryInterface
+    def dbh_query(sql)
+      DbHelper.query(sql)
+    end
+
+    def dbh_find(sql)
+      DbHelper.query(sql).first
+    end
+
+    def dbh_all(sql)
+      DbHelper.query(sql).to_a
+    end
+  end
 end

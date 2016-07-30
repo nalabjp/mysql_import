@@ -21,7 +21,7 @@ class MysqlImport
   end
 
   module Logging
-    def initialize(config, opts ={}, sql_opts = {})
+    def initialize(config, opts = {})
       @logger = Logger.new(opts[:log], opts.fetch(:debug, false))
       embed_logger
       super

@@ -2,17 +2,17 @@ require 'logger'
 
 class MysqlImport
   class Logger < SimpleDelegator
-    def initialize(logger, debug)
-      case logger
+    def initialize(out, debug)
+      case out
       when String
-        obj = ::Logger.new(arg)
+        obj = ::Logger.new(out)
       when NilClass
-        obj = ::Logger.new(STDOUT)
+        obj = ::Logger.new(nil)
+      when STDOUT, STDERR
+        obj = ::Logger.new(out)
         obj.formatter = ->(seveity, datetime, progname, message) { "#{String === message ? message : message.inspect}\n" }
-      when FalseClass
-        obj = ::Logger.new('/dev/null')
       else
-        obj = logger
+        obj = out
       end
 
       obj.level = debug ? ::Logger::DEBUG : ::Logger::INFO

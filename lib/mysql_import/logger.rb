@@ -23,16 +23,7 @@ class MysqlImport
   module Logging
     def initialize(config, opts ={}, sql_opts = {})
       @logger = Logger.new(opts[:log], opts.fetch(:debug, false))
-
-      LoadDataInfile2::Client.class_exec(@logger) do |logger|
-        define_method :build_sql_with_logging do |file, options|
-          options = {} unless options
-          build_sql_without_logging(file, options).tap {|sql| logger.debug("sql: #{sql}") }
-        end
-        alias_method :build_sql_without_logging, :build_sql
-        alias_method :build_sql, :build_sql_with_logging
-      end
-
+      embed_logger
       super
     end
 
@@ -64,6 +55,18 @@ class MysqlImport
           logger.debug("parallel_index: #{index}")
         end
       )
+    end
+
+    def embed_logger
+      unless LoadDataInfile2::Client.instance_methods.include?(:build_sql_with_logging)
+        LoadDataInfile2::Client.class_exec(logger) do |logger|
+          define_method :build_sql_with_logging do |file, options = {}|
+            build_sql_without_logging(file, options).tap {|sql| logger.debug("sql: #{sql}") }
+          end
+          alias_method :build_sql_without_logging, :build_sql
+          alias_method :build_sql, :build_sql_with_logging
+        end
+      end
     end
   end
 

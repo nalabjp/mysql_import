@@ -10,7 +10,7 @@ class MysqlImport
         obj = ::Logger.new(nil)
       when STDOUT, STDERR
         obj = ::Logger.new(out)
-        obj.formatter = ->(seveity, datetime, progname, message) { "#{String === message ? message : message.inspect}\n" }
+        obj.formatter = ->(_, _, _, message) { "#{String === message ? message : message.inspect}\n" }
       else
         obj = out
       end

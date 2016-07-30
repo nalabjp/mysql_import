@@ -5,11 +5,12 @@ require 'connection_pool'
 require 'parallel'
 
 class MysqlImport
-  def initialize(config, opts ={}, sql_opts = {})
+  def initialize(config, opts = {})
     @stash = []
     @fileters = []
     @concurrency = opts.has_key?(:concurrency) ? opts[:concurrency].to_i : 2
     pool = concurrency.zero? ? 1 : concurrency
+    sql_opts = opts.fetch(:sql_opts, {})
 
     @client = ConnectionPool.new(size: pool) { LoadDataInfile2::Client.new(config, sql_opts) }
     @result = Result.new

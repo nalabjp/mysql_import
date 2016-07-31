@@ -10,10 +10,23 @@ class MysqlImportTest < Test::Unit::TestCase
       DbHelper.truncate('users')
     end
 
+    def create_client(opts = {})
+      default_opts = { sql_opts: { local_infile: true } }
+      MysqlImport.new(DbConfig.to_hash, default_opts.merge(opts))
+    end
+
     test 'success' do
-      client = MysqlImport.new(DbConfig.to_hash, sql_opts: { local_infile: true })
+      assert_equal 0, dbh_query('select * from users;').size
+
+      client = create_client
       client.add(File.expand_path('../csv/users_valid.csv', __FILE__), table: 'users')
       client.import
+
+      res = dbh_query('select * from users')
+      assert_equal 1, res.size
+      assert_equal 1, res.first['id']
+      assert_equal 'nalabjp', res.first['name']
+      assert_equal 'nalabjp@gmail.com', res.first['email']
     end
   end
 end

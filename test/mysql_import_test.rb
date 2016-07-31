@@ -28,5 +28,31 @@ class MysqlImportTest < Test::Unit::TestCase
       assert_equal 'nalabjp', res.first['name']
       assert_equal 'nalabjp@gmail.com', res.first['email']
     end
+
+    sub_test_case 'filtering' do
+      test 'full file name' do
+        assert_equal 0, dbh_query('select * from users;').size
+
+        client = create_client
+        client.add(File.expand_path('../csv/users_valid.csv', __FILE__), table: 'users')
+        client.add(File.expand_path('../csv/not_import.csv', __FILE__), table: 'users')
+        client.import('users_valid.csv')
+
+        res = dbh_query('select * from users')
+        assert_equal 1, res.size
+      end
+
+      test 'partial file name' do
+        assert_equal 0, dbh_query('select * from users;').size
+
+        client = create_client
+        client.add(File.expand_path('../csv/users_valid.csv', __FILE__), table: 'users')
+        client.add(File.expand_path('../csv/not_import.csv', __FILE__), table: 'users')
+        client.import('users')
+
+        res = dbh_query('select * from users')
+        assert_equal 1, res.size
+      end
+    end
   end
 end

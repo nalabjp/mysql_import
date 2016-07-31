@@ -23,14 +23,14 @@ class MysqlImport::LoggerTest < Test::Unit::TestCase
     test 'STDOUT' do
       logdev = get_logdev(create_logger(STDOUT))
       assert_equal IO, logdev.instance_variable_get(:@dev).class
-      assert_match /STDOUT/, logdev.instance_variable_get(:@dev).inspect
+      assert_match Regexp.new('STDOUT'), logdev.instance_variable_get(:@dev).inspect
       assert_equal nil, logdev.instance_variable_get(:@filename)
     end
 
     test 'STDERR' do
       logdev = get_logdev(create_logger(STDERR))
       assert_equal IO, logdev.instance_variable_get(:@dev).class
-      assert_match /STDERR/, logdev.instance_variable_get(:@dev).inspect
+      assert_match Regexp.new('STDERR'), logdev.instance_variable_get(:@dev).inspect
       assert_equal nil, logdev.instance_variable_get(:@filename)
     end
 

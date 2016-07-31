@@ -46,8 +46,8 @@ class MysqlImport
   def run_import(cli, fpath, opts)
     t = Time.now
 
-    before = opts.delete(:before)
-    after = opts.delete(:after)
+    before = opts[:before]
+    after = opts[:after]
     table = opts[:table] || File.basename(fpath, '.*')
 
     if before

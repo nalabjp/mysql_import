@@ -46,24 +46,23 @@ class MysqlImport
   def run_import(cli, fpath, opts)
     t = Time.now
 
-    before = opts[:before]
-    after = opts[:after]
-    table = opts[:table] || File.basename(fpath, '.*')
+    sql_opts = Marshal.load(Marshal.dump(opts.reject {|k, _| %i(before after).include?(k) }))
+    table = sql_opts[:table] || File.basename(fpath, '.*')
 
-    if before
+    if opts[:before]
       begin
-        run_action(before, cli)
+        run_action(opts[:before], cli)
       rescue Break
         result.add(:skipped, table)
         return
       end
     end
 
-    cli.import(fpath, opts)
+    cli.import(fpath, sql_opts)
 
-    if after
+    if opts[:after]
       begin
-        run_action(after, cli)
+        run_action(opts[:after], cli)
       rescue Break
       end
     end

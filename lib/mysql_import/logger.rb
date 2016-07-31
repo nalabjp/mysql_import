@@ -30,36 +30,34 @@ class MysqlImport
     def import(*filters)
       super
     ensure
-      logger.info('Imported tables:')
-      if result.imported.size > 0
-        result.imported.sort.each {|t| logger.info("  #{t[0]} (#{t[1]} sec)") }
+      @logger.info('Imported tables:')
+      if @result.imported.size > 0
+        @result.imported.sort.each {|t| @logger.info("  #{t[0]} (#{t[1]} sec)") }
       else
-        logger.info('  nothing...')
+        @logger.info('  nothing...')
       end
-      if result.skipped.size > 0
-        logger.info('Skipped tables:')
-        result.skipped.sort.each {|t| logger.info("  #{t}") }
+      if @result.skipped.size > 0
+        @logger.info('Skipped tables:')
+        @result.skipped.sort.each {|t| @logger.info("  #{t}") }
       end
 
-      result.clear
+      @result.clear
     end
 
     private
 
-    attr_reader :logger
-
     def parallel_opts
       @parallel_opts ||= super.merge(
         finish: proc do |item, index, _result|
-          logger.debug("parallel_item: #{item.inspect}")
-          logger.debug("parallel_index: #{index}")
+          @logger.debug("parallel_item: #{item.inspect}")
+          @logger.debug("parallel_index: #{index}")
         end
       )
     end
 
     def embed_logger
       unless LoadDataInfile2::Client.instance_methods.include?(:build_sql_with_logging)
-        LoadDataInfile2::Client.class_exec(logger) do |logger|
+        LoadDataInfile2::Client.class_exec(@logger) do |logger|
           define_method :build_sql_with_logging do |file, options = {}|
             build_sql_without_logging(file, options).tap {|sql| logger.debug("sql: #{sql}") }
           end

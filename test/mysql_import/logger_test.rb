@@ -3,7 +3,7 @@ require 'test_helper'
 class MysqlImport::LoggerTest < Test::Unit::TestCase
   sub_test_case '#initialize' do
     def create_logger(log, debug = false)
-      MysqlImport.new(DbConfig.to_hash, log: log, debug: debug).send(:logger)
+      MysqlImport.new(DbConfig.to_hash, log: log, debug: debug).instance_variable_get(:@logger)
     end
 
     def get_logdev(logger)

@@ -7,9 +7,8 @@ require 'parallel'
 class MysqlImport
   def initialize(config, opts = {})
     @stash = []
-    @fileters = []
     @concurrency = opts.has_key?(:concurrency) ? opts[:concurrency].to_i : 2
-    pool = concurrency.zero? ? 1 : concurrency
+    pool = @concurrency.zero? ? 1 : @concurrency
     sql_opts = opts.fetch(:sql_opts, {})
 
     @client = ConnectionPool.new(size: pool) { LoadDataInfile2::Client.new(config, sql_opts) }
@@ -17,12 +16,12 @@ class MysqlImport
   end
 
   def add(file_path, opts = {})
-    stash.push([file_path, opts])
+    @stash.push([file_path, opts])
   end
 
   def import(*filters)
     Parallel.each(filtered_list(filters), parallel_opts) do |args|
-      client.with do |cli|
+      @client.with do |cli|
         run_import(cli, *args)
       end
     end
@@ -30,17 +29,15 @@ class MysqlImport
 
   private
 
-  attr_reader :stash, :filters, :concurrency, :client, :result
-
   def filtered_list(filters)
-    return stash if filters.empty?
+    return @stash if filters.empty?
 
     regexps = filters.map{|f| Regexp.new(f) }
-    stash.map{|row| row if regexps.any?{|r| r.match(row[0]) } }.compact
+    @stash.map{|row| row if regexps.any?{|r| r.match(row[0]) } }.compact
   end
 
   def parallel_opts
-    { in_threads: concurrency }
+    { in_threads: @concurrency }
   end
 
   def run_import(cli, fpath, opts)
@@ -53,7 +50,7 @@ class MysqlImport
       begin
         run_action(opts[:before], cli)
       rescue Break
-        result.add(:skipped, table)
+        @result.add(:skipped, table)
         return
       end
     end
@@ -67,7 +64,7 @@ class MysqlImport
       end
     end
 
-    result.add(:imported, [table, (Time.now - t)])
+    @result.add(:imported, [table, (Time.now - t)])
   end
 
   def run_action(action, cli)

@@ -52,5 +52,94 @@ class MysqlImportTest < Test::Unit::TestCase
         assert_equal 1, dbh_query('select * from users').size
       end
     end
+
+    sub_test_case 'before action' do
+      test 'sql' do
+        assert_equal 0, dbh_query('select * from users;').size
+
+        opts = {
+          table: 'users',
+          before: 'insert into users (id, name, email) values (100, "nalabjp100", "nalabjp100@gmail.com");'
+        }
+        client = create_client
+        client.add(File.expand_path('../csv/users_valid.csv', __FILE__), opts)
+        client.import
+
+        res = dbh_query('select * from users').to_a
+        assert_equal 2, res.size
+        assert_equal 1, res[0]['id']
+        assert_equal 'nalabjp', res[0]['name']
+        assert_equal 'nalabjp@gmail.com', res[0]['email']
+        assert_equal 100, res[1]['id']
+        assert_equal 'nalabjp100', res[1]['name']
+        assert_equal 'nalabjp100@gmail.com', res[1]['email']
+      end
+
+      test 'proc' do
+        assert_equal 0, dbh_query('select * from users;').size
+
+        opts = {
+          table: 'users',
+          before: ->(c) {
+            res = c.query('select count(*) as c from users;')
+            assert_equal 0, res.first['c']
+          }
+        }
+        client = create_client
+        client.add(File.expand_path('../csv/users_valid.csv', __FILE__), opts)
+        client.import
+
+        assert_equal 1, dbh_query('select * from users').size
+      end
+
+      test 'array' do
+        assert_equal 0, dbh_query('select * from users;').size
+
+        opts = {
+          table: 'users',
+          before: [
+            ->(c) {
+              res = c.query('select @my_var;')
+              assert_equal nil, res.first['@my_var']
+            },
+            'set @my_var = 1;',
+            ->(c) {
+              res = c.query('select @my_var;')
+              assert_equal 1, res.first['@my_var']
+            }
+          ]
+        }
+        client = create_client
+        client.add(File.expand_path('../csv/users_valid.csv', __FILE__), opts)
+        client.import
+
+        assert_equal 1, dbh_query('select * from users').size
+      end
+
+      test 'skip' do
+        assert_equal 0, dbh_query('select * from users;').size
+
+        client = create_client
+        client.add(File.expand_path('../csv/users_valid.csv', __FILE__), table: 'users')
+        client.import
+
+        assert_equal 1, dbh_query('select * from users').size
+
+        opts = {
+          table: 'users',
+          before: [
+            ->(c) {
+              res = c.query('select count(*) as c from users;')
+              raise MysqlImport::Break if res.first['c'] > 0
+            }
+          ]
+        }
+        client = create_client
+        client.add(File.expand_path('../csv/users_valid_2records.csv', __FILE__), opts)
+        client.import
+
+        assert_equal 1, dbh_query('select * from users').size
+      end
+    end
   end
 end

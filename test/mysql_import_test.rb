@@ -38,8 +38,7 @@ class MysqlImportTest < Test::Unit::TestCase
         client.add(File.expand_path('../csv/not_import.csv', __FILE__), table: 'users')
         client.import('users_valid.csv')
 
-        res = dbh_query('select * from users')
-        assert_equal 1, res.size
+        assert_equal 1, dbh_query('select * from users').size
       end
 
       test 'partial file name' do
@@ -50,8 +49,7 @@ class MysqlImportTest < Test::Unit::TestCase
         client.add(File.expand_path('../csv/not_import.csv', __FILE__), table: 'users')
         client.import('users')
 
-        res = dbh_query('select * from users')
-        assert_equal 1, res.size
+        assert_equal 1, dbh_query('select * from users').size
       end
     end
   end

@@ -51,6 +51,36 @@ class MysqlImportTest < Test::Unit::TestCase
 
         assert_equal 1, dbh_query('select * from users').size
       end
+
+      test 'nil' do
+        assert_equal 0, dbh_query('select * from users;').size
+
+        client = create_client
+        client.add(File.expand_path('../csv/users_valid.csv', __FILE__), table: 'users')
+        client.import(nil)
+
+        assert_equal 1, dbh_query('select * from users').size
+      end
+
+      test 'empty String' do
+        assert_equal 0, dbh_query('select * from users;').size
+
+        client = create_client
+        client.add(File.expand_path('../csv/users_valid.csv', __FILE__), table: 'users')
+        client.import('')
+
+        assert_equal 1, dbh_query('select * from users').size
+      end
+
+      test 'empty Array' do
+        assert_equal 0, dbh_query('select * from users;').size
+
+        client = create_client
+        client.add(File.expand_path('../csv/users_valid.csv', __FILE__), table: 'users')
+        client.import([])
+
+        assert_equal 1, dbh_query('select * from users').size
+      end
     end
 
     sub_test_case 'before action' do

@@ -32,7 +32,9 @@ class MysqlImport
   def filtered_list(filters)
     return @stash if filters.empty?
 
-    regexps = filters.map{|f| Regexp.new(f) }
+    regexps = filters.map{|f| Regexp.new(f) if f.is_a?(String) }.compact
+    return @stash if regexps.empty?
+
     @stash.map{|row| row if regexps.any?{|r| r.match(row[0]) } }.compact
   end
 

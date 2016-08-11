@@ -1,3 +1,5 @@
+require_relative 'db_config'
+
 class DbHelper
   MYSQL_CMD = "MYSQL_PWD=#{DbConfig[:password]} mysql -u #{DbConfig[:username]}"
 

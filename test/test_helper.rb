@@ -17,7 +17,6 @@ require 'mysql2'
 require 'mysql_import'
 require 'test/unit'
 
-require  File.expand_path('support/db_config.rb', __dir__)
-require  File.expand_path('support/db_helper.rb', __dir__)
+Dir[File.join(File.dirname(__FILE__), 'support/**/**.rb')].each {|f| require f }
 
 Test::Unit::TestCase.include(DbHelper::QueryInterface)

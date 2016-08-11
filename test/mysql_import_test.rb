@@ -79,7 +79,7 @@ class MysqlImportTest < Test::Unit::TestCase
         client.add(File.expand_path('../csv/users_valid.csv', __FILE__), table: 'users')
         client.import([])
 
-        assert_equal 1, dbh_query('select * from users').size
+        assert_equal 0, dbh_query('select * from users').size
       end
     end
 

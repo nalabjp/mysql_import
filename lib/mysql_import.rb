@@ -19,7 +19,7 @@ class MysqlImport
     @stash.push([file_path, opts])
   end
 
-  def import(*filters)
+  def import(filters = nil)
     Parallel.each(filtered_list(filters), parallel_opts) do |args|
       @client.with do |cli|
         run_import(cli, *args)
@@ -30,10 +30,10 @@ class MysqlImport
   private
 
   def filtered_list(filters)
-    return @stash if filters.empty?
+    return @stash if filters.nil?
 
-    regexps = filters.map{|f| Regexp.new(f) if f.is_a?(String) }.compact
-    return @stash if regexps.empty?
+    regexps = Array(filters).map{|f| Regexp.new(f) if f.is_a?(String) }.compact
+    return [] if regexps.empty?
 
     @stash.map{|row| row if regexps.any?{|r| r.match(row[0]) } }.compact
   end

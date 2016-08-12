@@ -77,6 +77,9 @@ importer.import('users')
 
 importer.import('users', 'groups')
 # => Import to `users` and `groups` table
+
+importer.import([])
+# => Do not import anything
 ```
 
 ### Hook

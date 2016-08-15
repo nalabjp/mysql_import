@@ -75,7 +75,7 @@ importer.add('/path/to/departments.csv')
 importer.import('users')
 # => Only import to `users` table
 
-importer.import('users', 'groups')
+importer.import(['users', 'groups'])
 # => Import to `users` and `groups` table
 
 importer.import([])

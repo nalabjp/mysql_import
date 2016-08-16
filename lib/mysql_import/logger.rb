@@ -6,11 +6,13 @@ class MysqlImport
       case out
       when String
         obj = ::Logger.new(out)
+        obj.level = ::Logger::INFO
       when NilClass
         obj = ::Logger.new(nil)
       when STDOUT, STDERR
         obj = ::Logger.new(out)
         obj.formatter = ->(_, _, _, message) { "#{String === message ? message : message.inspect}\n" }
+        obj.level = ::Logger::INFO
       else
         obj = out
       end

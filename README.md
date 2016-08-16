@@ -67,6 +67,8 @@ If you want to import only a specific file, you can specify the file.
 
 The specification of the file will be used regular expression
 
+#### String
+
 ```ruby
 importer = MysqlImport.new(db_config)
 importer.add('/path/to/users.csv')
@@ -74,10 +76,18 @@ importer.add('/path/to/groups.csv')
 importer.add('/path/to/departments.csv')
 importer.import('users')
 # => Only import to `users` table
+```
 
+#### Array
+
+```ruby
 importer.import(['users', 'groups'])
 # => Import to `users` and `groups` table
+```
 
+If empry:
+
+```ruby
 importer.import([])
 # => Do not import anything
 ```

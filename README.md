@@ -57,6 +57,56 @@ importer.import
 # => Import to `users` table from three csv files
 ```
 
+### Options
+
+#### #initialize
+
+Key that can be passed to the second argument of the option of `MysqlImport#initialize` is the four types.
+
+concurrency: The number of threads to use. Ruby' GIL is released when the IO waiting occurs in mysql, you might be effective by concurrent processing. (default: 2)
+
+```ruby
+importer = MysqlImport.new(db_config, concurrency: 4)
+```
+
+log: This is an option for the logger. (default: nil)
+
+```ruby
+# File path
+importer = MysqlImport.new(db_config, log: '/path/to/import.log')
+```
+
+```ruby
+# nil(This is the same as `/dev/null`)
+importer = MysqlImport.new(db_config, log: nil)
+```
+
+```ruby
+# STDOUT / STDERR
+importer = MysqlImport.new(db_config, log: $stdout)
+```
+
+```ruby
+# Custom logger
+importer = MysqlImport.new(db_config, log: CustomLogger.new)
+```
+
+debug: This is a flag to the level of the logger to debug. (default: false)
+
+```ruby
+importer = MysqlImport.new(db_config, log: $stdout, debug: true)
+```
+
+sql_opts: This is the option of import to be passed directly to the second argument of `LoadDataInfile2#initialize`.
+
+See more details for import options.
+
+https://github.com/nalabjp/load_data_infile2#sql-options
+
+#### #add
+
+The second argument of `MysqlImport#add` will be passed directly to the second argument of `LoadDataInfile2#import`.
+
 See more details for import options.
 
 https://github.com/nalabjp/load_data_infile2#sql-options

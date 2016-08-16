@@ -15,8 +15,8 @@ class MysqlImport
         obj = out
       end
 
-      obj.level = debug ? ::Logger::DEBUG : ::Logger::INFO
       __setobj__(obj)
+      obj.level = ::Logger::DEBUG if debug
     end
   end
 

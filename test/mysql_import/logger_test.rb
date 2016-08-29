@@ -54,7 +54,7 @@ class MysqlImport::LoggerTest < Test::Unit::TestCase
     assert_equal false, client.send(:parallel_opts)[:finish].is_a?(Proc)
     assert_equal false, LoadDataInfile2::Client.instance_methods.include?(:build_sql_with_logging)
 
-    client = MysqlImport.new(DbConfig.to_hash, log: nil, debug: true)
+    client = MysqlImport.new(DbConfig.to_hash, local_infile: true, log: nil, debug: true)
     assert_equal true, client.send(:parallel_opts)[:finish].is_a?(Proc)
     assert_equal true, LoadDataInfile2::Client.instance_methods.include?(:build_sql_with_logging)
     assert_nothing_raised do

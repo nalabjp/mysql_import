@@ -45,7 +45,7 @@ class MysqlImport
   def run_import(cli, fpath, opts)
     t = Time.now
 
-    sql_opts = Marshal.load(Marshal.dump(opts.reject {|k, _| %i(before after).include?(k) }))
+    sql_opts = opts.reject {|k, _| %i(before after).include?(k) }
     table = sql_opts[:table] || File.basename(fpath, '.*')
 
     if opts[:before]

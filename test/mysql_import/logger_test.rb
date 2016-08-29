@@ -48,4 +48,14 @@ class MysqlImport::LoggerTest < Test::Unit::TestCase
       assert_equal Logger::DEBUG, logger.level
     end
   end
+
+  test 'debug mode' do
+    importer = MysqlImport.new(DbConfig.to_hash, log: nil, debug: false)
+    assert_equal false, importer.send(:parallel_opts)[:finish].is_a?(Proc)
+    assert_equal false, LoadDataInfile2::Client.instance_methods.include?(:build_sql_with_logging)
+
+    importer = MysqlImport.new(DbConfig.to_hash, log: nil, debug: true)
+    assert_equal true, importer.send(:parallel_opts)[:finish].is_a?(Proc)
+    assert_equal true, LoadDataInfile2::Client.instance_methods.include?(:build_sql_with_logging)
+  end
 end

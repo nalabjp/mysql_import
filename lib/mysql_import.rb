@@ -52,7 +52,7 @@ class MysqlImport
       begin
         run_action(opts[:before], cli)
       rescue Break
-        @result.add(:skipped, table)
+        @result.skipped.push(table)
         return
       end
     end
@@ -66,7 +66,7 @@ class MysqlImport
       end
     end
 
-    @result.add(:imported, [table, (Time.now - t)])
+    @result.imported.push([table, (Time.now - t)])
   end
 
   def run_action(action, cli)
@@ -87,14 +87,6 @@ class MysqlImport
 
     def skipped
       @skipped ||= []
-    end
-
-    def mutex
-      @mutext ||= Mutex.new
-    end
-
-    def add(meth, res)
-      mutex.synchronize { __send__(meth).push(res) }
     end
 
     def clear

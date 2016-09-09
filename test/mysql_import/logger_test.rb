@@ -7,7 +7,7 @@ class MysqlImport::LoggerTest < Test::Unit::TestCase
     end
 
     def get_logdev(logger)
-      logger.__getobj__.instance_variable_get(:@logdev)
+      logger.instance_variable_get(:@logdev)
     end
 
     test 'file path' do
@@ -38,7 +38,7 @@ class MysqlImport::LoggerTest < Test::Unit::TestCase
       mylogger = ::Logger.new('/tmp/mylogger.log')
       logger = create_logger(mylogger)
       logdev = get_logdev(logger)
-      assert_equal mylogger.object_id, logger.__getobj__.object_id
+      assert_equal mylogger.object_id, logger.object_id
       assert_equal File, logdev.instance_variable_get(:@dev).class
       assert_equal '/tmp/mylogger.log', logdev.instance_variable_get(:@filename)
     end

@@ -1,31 +1,26 @@
 require 'logger'
 
 class MysqlImport
-  class Logger < SimpleDelegator
+  class Logger < ::Logger
     def initialize(out, debug)
-      case out
-      when String
-        obj = ::Logger.new(out)
-        obj.level = ::Logger::INFO
-      when NilClass
-        obj = ::Logger.new(nil)
-      when STDOUT, STDERR
-        obj = ::Logger.new(out)
-        obj.formatter = ->(_, _, _, message) { "#{String === message ? message : message.inspect}\n" }
-        obj.level = ::Logger::INFO
-      else
-        obj = out
-      end
+      super(out)
 
-      obj.level = ::Logger::DEBUG if debug
-      super(obj)
+      @level = INFO unless debug
+      case out
+      when STDOUT, STDERR
+        @formatter = ->(_, _, _, message) { "#{String === message ? message : message.inspect}\n" }
+      end
     end
   end
 
   module Logging
     def initialize(config, opts = {})
       @debug = opts.fetch(:debug, false)
-      @logger = Logger.new(opts[:log], @debug)
+      @logger = if opts[:log].is_a?(::Logger)
+                  opts[:log]
+                else
+                  Logger.new(opts[:log], @debug)
+                end
       embed_logger
       super
     end

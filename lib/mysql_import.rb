@@ -48,11 +48,14 @@ class MysqlImport
     sql_opts = opts.reject {|k, _| %i(before after).include?(k) }
     table = sql_opts[:table] || File.basename(fpath, '.*')
 
+    write_lock(cli, table) if opts[:lock]
+
     if opts[:before]
       begin
         run_action(opts[:before], cli)
       rescue Break
         @result.skipped.push(table)
+        unlock(cli) if opts[:lock]
         return
       end
     end
@@ -66,6 +69,8 @@ class MysqlImport
       end
     end
 
+    unlock(cli) if opts[:lock]
+
     @result.imported.push([table, (Time.now - t)])
   end
 
@@ -78,6 +83,14 @@ class MysqlImport
     else
       action.call(cli)
     end
+  end
+
+  def write_lock(cli, table)
+    cli.query("LOCK TABLE `#{table}` WRITE;")
+  end
+
+  def unlock(cli)
+    cli.query("UNLOCK TABLES;")
   end
 
   class Result

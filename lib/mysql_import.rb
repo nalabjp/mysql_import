@@ -7,6 +7,7 @@ require 'parallel'
 class MysqlImport
   def initialize(config, opts = {})
     @stash = []
+    @lock = opts.fetch(:lock, false)
     @concurrency = opts.has_key?(:concurrency) ? opts[:concurrency].to_i : 2
     pool = @concurrency.zero? ? 1 : @concurrency
     sql_opts = opts.fetch(:sql_opts, {})
@@ -44,30 +45,27 @@ class MysqlImport
 
   def run_import(cli, fpath, opts)
     t = Time.now
+    imported = false
 
     sql_opts = opts.reject {|k, _| %i(before after).include?(k) }
     table = sql_opts[:table] || File.basename(fpath, '.*')
-
-    write_lock(cli, table) if opts[:lock]
+    lock = opts.fetch(:lock, @lock)
 
     begin
+      write_lock(cli, table) if lock
+
       run_action(opts[:before], cli)
-    rescue Break
-      @result.skipped.push(table)
-      unlock(cli) if opts[:lock]
-      return
-    end
 
-    cli.import(fpath, sql_opts)
+      cli.import(fpath, sql_opts)
+      imported = true
 
-    begin
       run_action(opts[:after], cli)
     rescue Break
+      @result.skipped.push(table) unless imported
+    ensure
+      unlock(cli) if lock
+      @result.imported.push([table, (Time.now - t)]) if imported
     end
-
-    unlock(cli) if opts[:lock]
-
-    @result.imported.push([table, (Time.now - t)])
   end
 
   def run_action(action, cli)

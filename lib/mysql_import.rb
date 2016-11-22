@@ -50,23 +50,19 @@ class MysqlImport
 
     write_lock(cli, table) if opts[:lock]
 
-    if opts[:before]
-      begin
-        run_action(opts[:before], cli)
-      rescue Break
-        @result.skipped.push(table)
-        unlock(cli) if opts[:lock]
-        return
-      end
+    begin
+      run_action(opts[:before], cli)
+    rescue Break
+      @result.skipped.push(table)
+      unlock(cli) if opts[:lock]
+      return
     end
 
     cli.import(fpath, sql_opts)
 
-    if opts[:after]
-      begin
-        run_action(opts[:after], cli)
-      rescue Break
-      end
+    begin
+      run_action(opts[:after], cli)
+    rescue Break
     end
 
     unlock(cli) if opts[:lock]
@@ -75,6 +71,8 @@ class MysqlImport
   end
 
   def run_action(action, cli)
+    return unless action
+
     case action
     when Array
       action.each { |act| run_action(act, cli) }

@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'thwait'
 
 class MysqlImportTest < Test::Unit::TestCase
   test 'It has a version number' do
@@ -236,6 +237,63 @@ class MysqlImportTest < Test::Unit::TestCase
         client.import
 
         assert_equal 1, dbh_query('select * from users').size
+      end
+    end
+
+    sub_test_case 'with write lock' do
+      test 'enable in initialization' do
+        assert_equal 0, dbh_query('select * from users;').size
+
+        opts = {
+          table: 'users',
+          before: 'select sleep(2);'
+        }
+        client = create_client(lock: true)
+        client.add(File.expand_path('../csv/users_valid.csv', __FILE__), opts)
+
+        th_ret_before = nil
+        th_ret_after = nil
+        th = Thread.new do
+          th_ret_before = Mysql2::Client.new(DbConfig.to_hash).query('select * from users;').size
+          sleep(1)
+          th_ret_after = Mysql2::Client.new(DbConfig.to_hash).query('select * from users;').size
+        end
+        thall = ThreadsWait.new(th)
+
+        client.import
+        assert_equal 1, dbh_query('select * from users').size
+
+        thall.all_waits
+        assert_equal 0, th_ret_before
+        assert_equal 1, th_ret_after
+      end
+
+      test 'enable in options' do
+        assert_equal 0, dbh_query('select * from users;').size
+
+        opts = {
+          table: 'users',
+          lock: true,
+          before: 'select sleep(2);'
+        }
+        client = create_client
+        client.add(File.expand_path('../csv/users_valid.csv', __FILE__), opts)
+
+        th_ret_before = nil
+        th_ret_after = nil
+        th = Thread.new do
+          th_ret_before = Mysql2::Client.new(DbConfig.to_hash).query('select * from users;').size
+          sleep(1)
+          th_ret_after = Mysql2::Client.new(DbConfig.to_hash).query('select * from users;').size
+        end
+        thall = ThreadsWait.new(th)
+
+        client.import
+        assert_equal 1, dbh_query('select * from users').size
+
+        thall.all_waits
+        assert_equal 0, th_ret_before
+        assert_equal 1, th_ret_after
       end
     end
   end

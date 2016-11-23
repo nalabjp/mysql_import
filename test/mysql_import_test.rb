@@ -255,11 +255,12 @@ class MysqlImportTest < Test::Unit::TestCase
         th_ret_after = nil
         th = Thread.new do
           th_ret_before = Mysql2::Client.new(DbConfig.to_hash).query('select * from users;').size
-          sleep(1)
+          sleep(2)
           th_ret_after = Mysql2::Client.new(DbConfig.to_hash).query('select * from users;').size
         end
         thall = ThreadsWait.new(th)
 
+        sleep(1)
         client.import
         assert_equal 1, dbh_query('select * from users').size
 
@@ -283,11 +284,12 @@ class MysqlImportTest < Test::Unit::TestCase
         th_ret_after = nil
         th = Thread.new do
           th_ret_before = Mysql2::Client.new(DbConfig.to_hash).query('select * from users;').size
-          sleep(1)
+          sleep(2)
           th_ret_after = Mysql2::Client.new(DbConfig.to_hash).query('select * from users;').size
         end
         thall = ThreadsWait.new(th)
 
+        sleep(1)
         client.import
         assert_equal 1, dbh_query('select * from users').size
 

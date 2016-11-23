@@ -11,5 +11,5 @@ group :development, :test do
 end
 
 group :test do
-  gem "codeclimate-test-reporter", require: false
+  gem "codeclimate-test-reporter"
 end

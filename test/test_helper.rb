@@ -2,8 +2,6 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 if ENV['TRAVIS']
   begin
-    require 'codeclimate-test-reporter'
-    CodeClimate::TestReporter.start
     require 'simplecov'
     SimpleCov.start
   rescue LoadError

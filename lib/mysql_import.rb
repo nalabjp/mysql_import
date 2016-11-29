@@ -52,7 +52,10 @@ class MysqlImport
     lock = opts.fetch(:lock, @lock)
 
     begin
-      write_lock(cli, table) if lock
+      if lock
+        write_lock(cli, table)
+        lt = Time.now
+      end
 
       run_action(opts[:before], cli)
 
@@ -63,8 +66,12 @@ class MysqlImport
     rescue Break
       @result.skipped.push(table) unless imported
     ensure
-      unlock(cli) if lock
-      @result.imported.push([table, (Time.now - t)]) if imported
+      res = [table, (Time.now - t)]
+      if lock
+        res.push(Time.now - lt)
+        unlock(cli)
+      end
+      @result.imported.push(res) if imported
     end
   end
 

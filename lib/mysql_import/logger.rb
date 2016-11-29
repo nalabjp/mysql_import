@@ -30,7 +30,12 @@ class MysqlImport
     ensure
       @logger.info('Imported tables:')
       if @result.imported.size > 0
-        @result.imported.sort.each {|t| @logger.info("  #{t[0]} (#{t[1]} sec)") }
+        @result.imported.sort.each do |t|
+          msg = "  #{t[0]} (exec:#{format('%.3fs', t[1])}"
+          msg << " lock:#{format('%.3fs', t[2])}" if t[2]
+          msg << ')'
+          @logger.info(msg)
+        end
       else
         @logger.info('  nothing...')
       end

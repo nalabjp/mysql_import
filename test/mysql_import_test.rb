@@ -238,6 +238,26 @@ class MysqlImportTest < Test::Unit::TestCase
 
         assert_equal 1, dbh_query('select * from users').size
       end
+
+      test 'skip' do
+        assert_equal 0, dbh_query('select * from users;').size
+
+        opts = {
+          table: 'users',
+          after: [
+            ->(c) {
+              res = c.query('select count(*) as c from users;')
+              raise MysqlImport::Break if res.first['c'] > 1
+              c.query('truncate table users;')
+            }
+          ]
+        }
+        client = create_client
+        client.add(File.expand_path('../csv/users_valid_2records.csv', __FILE__), opts)
+        client.import
+
+        assert_equal 2, dbh_query('select * from users').size
+      end
     end
 
     sub_test_case 'with write lock' do

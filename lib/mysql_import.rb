@@ -3,6 +3,7 @@ require 'mysql_import/logger'
 require 'load_data_infile2'
 require 'connection_pool'
 require 'parallel'
+require 'benchmark'
 
 class MysqlImport
   def initialize(config, opts = {})
@@ -23,7 +24,12 @@ class MysqlImport
   def import(filters = nil)
     Parallel.each(filtered_list(filters), parallel_opts) do |args|
       @client.with do |cli|
-        run_import(cli, *args)
+        begin
+          store[:client] = cli
+          import_internal(*args)
+        ensure
+          clear_store
+        end
       end
     end
   end
@@ -43,65 +49,107 @@ class MysqlImport
     { in_threads: @concurrency }
   end
 
-  def run_import(cli, fpath, opts)
-    t = Time.now
-    imported = false
-
+  def import_internal(fpath, opts)
     sql_opts = opts.reject {|k, _| %i(before after).include?(k) }
-    table = sql_opts[:table] || File.basename(fpath, '.*')
-    lock = opts.fetch(:lock, @lock)
+    store[:table] = sql_opts[:table] || File.basename(fpath, '.*')
 
-    begin
-      if lock
-        write_lock(cli, table)
-        lt = Time.now
+    with_recording do
+      with_lock_if_needed(opts.fetch(:lock, @lock)) do
+        with_skip_handling do
+          run_before_action(opts[:before])
+
+          store[:client].import(fpath, sql_opts)
+
+          run_after_action(opts[:after])
+        end
       end
-
-      run_action(opts[:before], cli)
-
-      cli.import(fpath, sql_opts)
-      imported = true
-
-      run_action(opts[:after], cli)
-    rescue Break
-      @result.skipped.push(table) unless imported
-    ensure
-      res = [table, (Time.now - t)]
-      if lock
-        res.push(Time.now - lt)
-        unlock(cli)
-      end
-      @result.imported.push(res) if imported
     end
   end
 
-  def run_action(action, cli)
+  def with_recording
+    store[:exec_time] = realtime { yield }
+  ensure
+    if store[:before_break]
+      @result.skipped.push(store[:table])
+    else
+      res = [store[:table], store[:exec_time]]
+      res.push(store[:lock_time]) if store[:lock_time]
+      @result.imported.push(res)
+    end
+  end
+
+  def with_lock_if_needed(need)
+    if need
+      begin
+        write_lock
+        store[:lock_time] = realtime { yield }
+      ensure
+        unlock
+      end
+    else
+      yield
+    end
+  end
+
+  def with_skip_handling
+    yield
+  rescue BeforeBreak
+    store[:before_break] = true
+  rescue AfterBreak
+    store[:after_break] = true
+  end
+
+  def realtime
+    Benchmark.realtime { yield }
+  end
+
+  def run_action(action)
     return unless action
 
     case action
     when Array
-      action.each { |act| run_action(act, cli) }
+      action.each { |act| run_action(act) }
     when String
-      cli.query(action)
+      store[:client].query(action)
     else
-      action.call(cli)
+      action.call(store[:client])
     end
   end
 
-  def write_lock(cli, table)
+  def run_before_action(action)
+    run_action(action)
+  rescue Break
+    raise BeforeBreak
+  end
+
+  def run_after_action(action)
+    run_action(action)
+  rescue Break
+    raise AfterBreak
+  end
+
+  def write_lock
     [
       'SET @old_autocommit=@@autocommit;',
       'SET autocommit=0;',
-      "LOCK TABLE `#{table}` WRITE;"
-    ].each {|sql| cli.query(sql)}
+      "LOCK TABLE `#{store[:table]}` WRITE;"
+    ].each {|sql| store[:client].query(sql)}
   end
 
-  def unlock(cli)
+  def unlock
     [
       'COMMIT;',
       'UNLOCK TABLES;',
       'SET autocommit=@old_autocommit;'
-    ].each {|sql| cli.query(sql)}
+    ].each {|sql| store[:client].query(sql)}
+  end
+
+  def store
+    Thread.current[:store] ||= {}
+  end
+
+  def clear_store
+    Thread.current[:store] = nil
   end
 
   class Result
@@ -120,4 +168,6 @@ class MysqlImport
   end
 
   class Break < StandardError; end
+  class BeforeBreak < Break; end
+  class AfterBreak < Break; end
 end

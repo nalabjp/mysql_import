@@ -30,10 +30,12 @@ class MysqlImport
     ensure
       @logger.info('Imported tables:')
       if @result.imported.size > 0
+        max_len = @result.imported.map(&:first).max_by{|w| w.length}.length
         @result.imported.sort.each do |t|
-          msg = "  #{t[0]} (exec:#{format('%.3fs', t[1])}"
+          space = ' ' * ((max_len - t[0].length) + 1)
+          msg = "  #{t[0]}#{space}[exec:#{format('%.3fs', t[1])}"
           msg << " lock:#{format('%.3fs', t[2])}" if t[2]
-          msg << ')'
+          msg << ']'
           @logger.info(msg)
         end
       else

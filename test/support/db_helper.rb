@@ -24,13 +24,5 @@ class DbHelper
     def dbh_query(sql)
       DbHelper.query(sql)
     end
-
-    def dbh_find(sql)
-      DbHelper.query(sql).first
-    end
-
-    def dbh_all(sql)
-      DbHelper.query(sql).to_a
-    end
   end
 end

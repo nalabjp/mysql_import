@@ -89,11 +89,19 @@ class MysqlImport
   end
 
   def write_lock(cli, table)
-    cli.query("LOCK TABLE `#{table}` WRITE;")
+    [
+      'SET @old_autocommit=@@autocommit;',
+      'SET autocommit=0;',
+      "LOCK TABLE `#{table}` WRITE;"
+    ].each {|sql| cli.query(sql)}
   end
 
   def unlock(cli)
-    cli.query("UNLOCK TABLES;")
+    [
+      'COMMIT;',
+      'UNLOCK TABLES;',
+      'SET autocommit=@old_autocommit;'
+    ].each {|sql| cli.query(sql)}
   end
 
   class Result

@@ -2,13 +2,13 @@ dist: trusty
 sudo: required
 language: ruby
 rvm:
-- 2.3.3
+  - 2.3.3
 before_install: gem install bundler
 cache:
-- bundler
-- apt
+  - bundler
+  - apt
 before_script:
-- bin/db_setup
+  - bin/db_setup
 after_success:
   - bundle exec codeclimate-test-reporter
 addons:

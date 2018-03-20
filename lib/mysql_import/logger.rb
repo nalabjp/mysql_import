@@ -33,7 +33,8 @@ class MysqlImport
         max_len = @result.imported.map(&:first).max_by{|w| w.length}.length
         @result.imported.sort.each do |t|
           space = ' ' * ((max_len - t[0].length) + 1)
-          msg = "  #{t[0]}#{space}[exec:#{format('%.3fs', t[1])}"
+          exec = t[1] ? format('%.3fs', t[1]) : 'FAILED'
+          msg = "  #{t[0]}#{space}[exec:#{exec}"
           msg << " lock:#{format('%.3fs', t[2])}" if t[2]
           msg << ']'
           @logger.info(msg)
